@@ -20,6 +20,5 @@ test.describe('Login Tests', () => {
     const lockedOutUser = credentials[1];
     await loginPage.loginApplication(lockedOutUser.getUsername(), lockedOutUser.getPassword());
     await loginPage.expectErrorMessageToContain('Epic sadface: Sorry, this user has been locked out.');
-    //expect(errorText).toContain('Epic sadface: Sorry, this user has been locked out.');
   });
 });

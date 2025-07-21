@@ -1,8 +1,10 @@
 import { page, expect } from '@playwright/test';
+import { AbstractComponent } from '../../abstractComponent/AbstractComponent.js';
 const { getInventoryDetails } = require('../../../main/utils/testdataUtil.js');
 
-export class InventoryPage {
+export class InventoryPage extends AbstractComponent {
     constructor(page) {
+        super(page);
         this.page = page;
         this.inventoryItem = this.page.locator('.inventory_item');
         this.addToCartButton = '.btn_inventory:has-text("Add to cart")';
@@ -13,7 +15,6 @@ export class InventoryPage {
         const inventoryItems = await getInventoryDetails(this.page);
         return inventoryItems;
     }
-
     // get the number of inventory items
     async getNumberOfInventoryItems() {
         const numOfInventoryItems = await this.inventoryItem.count();
@@ -42,6 +43,7 @@ export class InventoryPage {
         const product = await this.getInventoryItemLocatorByName(itemName);
         await product.locator(this.addToCartButton).click();
     }
+
     // click the "Remove" button for a specific inventory item
     async removeItemFromCart(itemName) {
         const product = await this.getInventoryItemLocatorByName(itemName);

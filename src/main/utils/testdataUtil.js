@@ -36,7 +36,7 @@ async function getInventoryDetails(page) {
     const imgLocator = item.locator('img');  // now relative to the item
     const imageSrc = await imgLocator.getAttribute('src');
 
-    inventoryDetails.push(new InventoryDetails(title, price, description, imageSrc));
+    inventoryDetails.push(new InventoryDetails(title, description, price, imageSrc));
   }
 
   return inventoryDetails;

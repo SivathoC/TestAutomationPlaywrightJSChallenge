@@ -1,5 +1,5 @@
 import {ShoppingCartPage} from '../ui/pages/ShoppingCartPage.js';
-class AbstractComponent {
+export class AbstractComponent {
     constructor(page) {
         this.page = page;
         this.cartLink = this.page.locator('.shopping_cart_link');
