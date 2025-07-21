@@ -1,4 +1,8 @@
-import { test, expect } from '@playwright/test';
+const { test, expect } = require('@playwright/test');
+const Ajv = require('ajv');
+
+const ajv = new Ajv({ allErrors: true });
+require('ajv-formats')(ajv)
 
 let response;
 const id = 68;
@@ -75,4 +79,35 @@ test.describe('Booking - UpdatedBooking', () => {
     console.log('Response Headers:', response.headers());
     console.log(jsonData);
   });
+    test('Validate booking JSON schema', async ({ request }) => {
+    expect(response.ok()).toBeTruthy();
+  
+    const jsonData = await response.json();
+  
+  const schema = {
+    // "$schema": "http://json-schema.org/draft-04/schema#", ← REMOVE THIS LINE
+    "type": "object",
+    "properties": {
+      "firstname": { "type": "string" },
+      "lastname": { "type": "string" },
+      "totalprice": { "type": "number" },
+      "depositpaid": { "type": "boolean" },
+      "bookingdates": {
+        "type": "object",
+        "properties": {
+          "checkin": { "type": "string", "format": "date" },
+          "checkout": { "type": "string", "format": "date" }
+        },
+        "required": ["checkin", "checkout"]
+      },
+      "additionalneeds": { "type": "string" }
+    },
+    "required": ["firstname", "lastname", "totalprice", "depositpaid", "bookingdates", "additionalneeds"]
+  };
+    const validate = ajv.compile(schema);
+    const valid = validate(jsonData);
+    expect(valid).toBeTruthy();
+    if (!valid) {
+      console.error('Schema validation errors:', validate.errors);
+  }});
 });
