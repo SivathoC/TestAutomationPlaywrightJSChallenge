@@ -21,20 +21,24 @@ async function getLoginCredentials(page) {
 
   return credentials;
 }   
-module.exports = { getLoginCredentials };
-
 async function getInventoryDetails(page) {
-  const items = await page.$$('[data-test="inventory-item"]');
+  const itemsLocator = page.locator('[data-test="inventory-item"]');
   const inventoryDetails = [];
 
-  for (const item of items) {
+  const count = await itemsLocator.count();
+
+  for (let i = 0; i < count; i++) {
+    const item = itemsLocator.nth(i);
+
     const title = await item.locator('.inventory_item_name').textContent();
     const price = await item.locator('.inventory_item_price').textContent();
     const description = await item.locator('.inventory_item_desc').textContent();
-    const imgLocator = page.locator('img[data-test="inventory-item-sauce-labs-backpack-img"]');
+    const imgLocator = item.locator('img');  // now relative to the item
     const imageSrc = await imgLocator.getAttribute('src');
+
     inventoryDetails.push(new InventoryDetails(title, price, description, imageSrc));
   }
+
   return inventoryDetails;
 }
-module.exports = { getLoginCredentials };
+module.exports = { getLoginCredentials, getInventoryDetails };
