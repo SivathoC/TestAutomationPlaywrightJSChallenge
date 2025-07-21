@@ -15,12 +15,10 @@ test.describe('Checkout Your Information Page Tests', () => {
         const standardUser = credentials[0];
         inventoryPage = await loginPage.loginApplication(standardUser.getUsername(), standardUser.getPassword());
         inventoryItems = await inventoryPage.getInventoryItems();
-        const itemNames = inventoryItems.map(item => item.getName());
-        const itemDescriptions = inventoryItems.map(item => item.getDescription());
-        const itemPrices = inventoryItems.map(item => item.getPrice());
-        itemName = itemNames[0];
-        itemDescription = itemDescriptions[0];
-        itemPrice = itemPrices[0];
+        const firstItem = inventoryItems[0];
+        itemName = await firstItem.getName();
+        itemDescription = await firstItem.getDescription();
+        itemPrice = await firstItem.getPrice();;
         await inventoryPage.addItemToCart(itemName);
         shoppingCartPage = await inventoryPage.navigateToShoppingCart();
         await shoppingCartPage.verifyItemInCart(itemName);
