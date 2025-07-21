@@ -5,6 +5,8 @@ export class InventoryPage {
     constructor(page) {
         this.page = page;
         this.inventoryItem = this.page.locator('.inventory_item');
+        this.addToCartButton = '.btn_inventory:has-text("Add to cart")';
+        this.removeButton = '.btn_inventory:has-text("Remove")';
     }
     //get inventory items from the test data utility
     async getInventoryItems() {
@@ -30,21 +32,20 @@ export class InventoryPage {
     }
     //get a specific inventory item by name
     async getInventoryItemLocatorByName(itemName) {
-        return this.inventoryItem.filter({
-            has: this.page.locator('.inventory_item_name', { hasText: itemName }),
+        const product = this.page.locator('.inventory_item').filter({
+            has: this.page.locator(`.inventory_item_name:text-is("${itemName}")`)
         });
+        return product;
     }
     // click the "Add to Cart" button for a specific inventory item
     async addItemToCart(itemName) {
-        const itemLocator = await this.getInventoryItemLocatorByName(itemName);
-        const addToCartButton = itemLocator.locator('.btn_inventory:has-text("Add to cart")');
-        await addToCartButton.click();
+        const product = await this.getInventoryItemLocatorByName(itemName);
+        await product.locator(this.addToCartButton).click();
     }
     // click the "Remove" button for a specific inventory item
     async removeItemFromCart(itemName) {
-        const itemLocator = await this.getInventoryItemLocatorByName(itemName);
-        const removeButton = itemLocator.locator('.btn_inventory:has-text("Remove")');
-        await removeButton.click();
+        const product = await this.getInventoryItemLocatorByName(itemName);
+        await product.locator(this.removeButton).click();
     }
     // Add multiple items to the cart
     async addItemsToCart(itemNames) {

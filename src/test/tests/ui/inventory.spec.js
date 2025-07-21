@@ -17,4 +17,9 @@ test.describe('Inventory Tests', () => {
     // Validate that there are more than 1 inventory items
     const itemsCount = await inventoryPage.validateInventoryItemsCountGreaterThanOrEqualTo(1);
   });
+  test('User can add items to the cart', async ({ page }) => {
+    const itemNames = inventoryItems.map(item => item.getName());
+    let itemToAdd = itemNames[0];
+    await inventoryPage.addItemToCart(itemToAdd);
+  });
 });
