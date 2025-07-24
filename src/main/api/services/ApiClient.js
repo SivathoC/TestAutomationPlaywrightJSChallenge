@@ -63,13 +63,8 @@ export class ApiClient {
       data
     });
   }
-  // Update Booking
-  async partialUpdateBooking(bookingid, token, data) {
-    return this.request.patch(`${this.baseUrl}/booking/${bookingid}`, {
-      headers: this.getAuthHeaders(token),
-      data
-    });
-  }  async updateBooking(bookingid, token, data) {
+  // Update Booking 
+  async updateBooking(bookingid, token, data) {
     return this.request.put(`${this.baseUrl}/booking/${bookingid}`, {
       headers: this.getAuthHeaders(token),
       data
@@ -81,14 +76,12 @@ export class ApiClient {
       data
     });
   }
-
   // Delete Booking
   async deleteBooking(bookingid, token) {
     return this.request.delete(`${this.baseUrl}/booking/${bookingid}`, {
       headers: this.getDeleteHeaders(token)
     })
   }
-
   // Headers
   getAuthHeaders(token) {
     return {

@@ -1,39 +1,40 @@
-const { test, expect } = require('@playwright/test');
-const Ajv = require('ajv');
+import {test,expect} from '@playwright/test';
+import {ApiClient} from'../../../main/api/services/ApiClient.js';
+import { ApiClientTestData } from '../../../main/utils/apiClientTestData.js';
 
+const Ajv = require('ajv');
 const ajv = new Ajv({ allErrors: true });
 require('ajv-formats')(ajv)
 
 let response;
-const id = 68;
+let jsonData;
 
 test.describe('Booking - UpdatedBooking', () => {
     test.beforeEach(async ({ request }) => {
-        const loginResponse = await request.post('https://restful-booker.herokuapp.com/auth', {
-            data: {
-                username: 'admin',
-                password: 'password123'
-            }
-        });
-        const { token } = await loginResponse.json();
-        response = await request.put(`https://restful-booker.herokuapp.com/booking/${id}`, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Cookie': `token=${token}`
-        },
-        data: {
-            firstname: "James",
-            lastname: "Brown",
-            totalprice: 111,
-            depositpaid: true,
-            bookingdates: {
-              checkin: "2018-01-01",
-              checkout: "2019-01-01"
-            },
-            additionalneeds: "Breakfast"
-        }
-    });
+      let apiClient
+      let token, bookingid;
+      let authResponse, createBookingResponse;
+
+      apiClient = new ApiClient(request);
+      authResponse = await apiClient.authenticate(
+          ApiClientTestData.validCredentials.username,
+          ApiClientTestData.validCredentials.password
+      );
+      const jsonAuthData = await authResponse.json();
+      token =jsonAuthData.token;
+
+      createBookingResponse = await apiClient.createBooking (
+        ApiClientTestData.createBookingData
+      );
+      const jsonCreateBookingData = await createBookingResponse.json();
+      bookingid = jsonCreateBookingData.bookingid;
+
+      response = await apiClient.updateBooking (
+        bookingid,
+        token, 
+        ApiClientTestData.updatedateData
+      );
+      jsonData = await response.json();
   });
 
   test('Status code is 200', async () => {
@@ -80,34 +81,13 @@ test.describe('Booking - UpdatedBooking', () => {
     console.log(jsonData);
   });
     test('Validate booking JSON schema', async ({ request }) => {
-    expect(response.ok()).toBeTruthy();
-  
-    const jsonData = await response.json();
-  
-  const schema = {
-    // "$schema": "http://json-schema.org/draft-04/schema#", ← REMOVE THIS LINE
-    "type": "object",
-    "properties": {
-      "firstname": { "type": "string" },
-      "lastname": { "type": "string" },
-      "totalprice": { "type": "number" },
-      "depositpaid": { "type": "boolean" },
-      "bookingdates": {
-        "type": "object",
-        "properties": {
-          "checkin": { "type": "string", "format": "date" },
-          "checkout": { "type": "string", "format": "date" }
-        },
-        "required": ["checkin", "checkout"]
-      },
-      "additionalneeds": { "type": "string" }
-    },
-    "required": ["firstname", "lastname", "totalprice", "depositpaid", "bookingdates", "additionalneeds"]
-  };
-    const validate = ajv.compile(schema);
-    const valid = validate(jsonData);
-    expect(valid).toBeTruthy();
-    if (!valid) {
-      console.error('Schema validation errors:', validate.errors);
-  }});
+        const validate = ajv.compile(ApiClientTestData.bookingSchema);
+        const valid = validate(jsonData);
+
+        expect(response.ok()).toBeTruthy();   
+        if (!valid) {
+          console.error('Schema validation errors:', validate.errors);
+        }
+        expect(valid).toBeTruthy();
+    });
 });
