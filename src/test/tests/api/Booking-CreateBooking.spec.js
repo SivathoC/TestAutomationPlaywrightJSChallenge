@@ -1,32 +1,26 @@
 import { test, expect } from '@playwright/test';
-import { int } from 'zod';
+import {ApiClient} from'../../../main/api/services/ApiClient.js';
+import { ApiClientTestData } from '../../../main/utils/apiClientTestData.js';
+
 const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
-
 const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
 
 test.describe('Booking Create Booking', () => {
+    let apiClient;
     let response;
+    let jsonData;
+
     test.beforeEach(async ({ request }) => {
-        response = await request.post('https://restful-booker.herokuapp.com/booking', {
-            data: {
-                firstname : 'Jim',
-                lastname : 'Brown',
-                totalprice : 111,
-                depositpaid : true,
-                bookingdates : {
-                    checkin : '2018-01-01',
-                    checkout : '2019-01-01'
-                },
-                "additionalneeds" : "Breakfast"
-            }
-        });
+        apiClient = new ApiClient(request);
+        response = await apiClient.createBooking(ApiClientTestData.createBookingData);
+        jsonData = await response.json();
     });
     test('Status code is 200', async () => {
         expect(response.status()).toBe(200); 
     });
-    test('Status code name has string OK', async () => {
+    test('Status code has string OK', async () => {
         expect(response.statusText()).toBe('OK');
     });
     test('Content-Type header is present and Response is in JSON format', async () => {
@@ -65,52 +59,14 @@ test.describe('Booking Create Booking', () => {
 
         expect(booking).toHaveProperty('additionalneeds');
         expect(typeof booking.additionalneeds).toBe('string');
-
-        console.log('Response Headers:', response.headers());
-        console.log(jsonData);
     });
     test('Validate booking response schema', async ({ request }) => { 
-        expect(response.ok()).toBeTruthy();
-        const jsonData = await response.json();
-        const schema = {
-            type: "object",
-            properties: {
-                bookingid: { type: "number" },
-                booking: {
-                    type: "object",
-                    properties: {
-                        firstname: { type: "string" },
-                        lastname: { type: "string" },
-                        totalprice: { type: "number" },
-                        depositpaid: { type: "boolean" },
-                        bookingdates: {
-                            type: "object",
-                            properties: {
-                                checkin: { type: "string", format: "date" },
-                                checkout: { type: "string", format: "date" }
-                            },
-                            required: ["checkin", "checkout"]
-                        },
-                        additionalneeds: { type: "string" }
-                    },
-                    required: [
-                        "firstname",
-                        "lastname",
-                        "totalprice",
-                        "depositpaid",
-                        "bookingdates",
-                        "additionalneeds"
-                    ]
-                }
-            },
-            required: ["bookingid", "booking"]
-        };
-        const validate = ajv.compile(schema);
+        const validate = ajv.compile(ApiClientTestData.fullBookingSchema);
         const valid = validate(jsonData);
+        expect(response.ok()).toBeTruthy();
         if (!valid) {
             console.error('Schema validation errors:', validate.errors);
         }
         expect(valid).toBeTruthy();
-
     });
 });
